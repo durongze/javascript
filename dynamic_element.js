@@ -17,10 +17,11 @@
 <script>
 	var svg_tmr;
 	var img_idx = 0;
-
-	var wheat = HanziWriter.create('wheat_div', '麦', {width:100, height:100, padding:5, delayBetweenLoops:3000});
+	var width = 100;
+	var height = 100;
+	var wheat = HanziWriter.create('wheat_div', '麦', {width:width, height:height, padding:5, delayBetweenLoops:3000});
 	wheat.loopCharacterAnimation();  
-	var mind = HanziWriter.create('mind_div', '思', {width:100, height:100, padding:5, delayBetweenLoops:3000});
+	var mind = HanziWriter.create('mind_div', '思', {width:width, height:height, padding:5, delayBetweenLoops:3000});
 	mind.loopCharacterAnimation();
 
 	var encoder = null;
@@ -67,12 +68,9 @@
 	}
 
 	function SvgCallBack(index, node) {
-		var parentNode = ;
-		var svg = node.outerHTML.trim();
-
 		var canvas_svg = document.createElement('canvas');
 		canvas_svg.id = 'svg_canvas';
-		canvg(canvas_svg, svg);
+		canvg(canvas_svg, node.outerHTML.trim());
 
 		UpdateNode(node.parentNode, canvas_svg);
 
@@ -93,6 +91,7 @@
 		svgElem.each(SvgCallBack);
 	};
 
+	CreateGif(width, height);
 	svg_tmr = setInterval("Svg2Canvas()", 1000);
 
 </script>
