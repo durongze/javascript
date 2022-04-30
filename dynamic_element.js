@@ -6,25 +6,52 @@
 <script src="../jquery-3.4.1.js"></script>
 <script src="../html2canvas.js"></script>
 <script src="../canvg.js"></script>
-<canvas id="bitmap_red" width = "100px" height="100px" ></canvas>
-<canvas id="bitmap_green" width = "100px" height="100px" ></canvas>
 <img id="image">
-<div id="wheat_div" class="box"></div>
-<div id="mind_div" class="box"></div>
 <style type="text/css">
 .box {width: 100px; height: 100px; background: red; border: 5px solid yellow;}
 </style>
 <script>
 	var svg_tmr;
 	var img_idx = 0;
-	var width = 100;
-	var height = 100;
-	var wheat = HanziWriter.create('wheat_div', '麦', {width:width, height:height, padding:5, delayBetweenLoops:3000});
-	wheat.loopCharacterAnimation();  
-	var mind = HanziWriter.create('mind_div', '思', {width:width, height:height, padding:5, delayBetweenLoops:3000});
-	mind.loopCharacterAnimation();
 
-	var encoder = null;
+	function CreateDiv(word, width, height)
+	{
+		var word_div = document.createElement('div');
+		word_div.id = word;
+		word_div.width = width;
+		word_div.height = height;
+		document.body.appendChild(word_div);
+		return word_div;
+	}
+
+	function CreateWordList(text, width, height) {
+		for (var i = 0; i < text.length; ++i) {
+			var word = text.substr(i, 1);
+			CreateDiv(word, width, height);
+			var wheat = HanziWriter.create(word, word, {width:width, height:height, padding:5, delayBetweenLoops:3000});
+			wheat.loopCharacterAnimation();			
+		}
+	}
+
+	function CreateCanvasId(red, green, blue)
+	{
+		return red + "_" + green + "_" + blue;
+	}
+
+	function CreateCanvas(red, green, blue, width, height)
+	{
+		var id = CreateCanvasId(red, green, blue);
+		var canvas = document.createElement('canvas');
+		canvas.id = id;
+		canvas.width = width;
+		canvas.height = height;
+
+		var context = canvas.getContext('2d');
+		context.fillStyle = "rgb(" + red + ", " + green + ", " + blue + ")";
+		context.fillRect(0, 0, canvas.width, canvas.height);
+		return context;
+	}
+
 	function CreateGif(width, height)
 	{
 		encoder = new GIFEncoder();
@@ -33,18 +60,12 @@
 		encoder.setDelay(200);
 		encoder.setSize(width, height);
 
-		var canvas_red = document.getElementById('bitmap_red');
-		var context_red = canvas_red.getContext('2d');
-		context_red.fillStyle = "rgb(255, 0, 0)";
-		context_red.fillRect(0,0,canvas_red.width, canvas_red.height); 
-
-		var canvas_green = document.getElementById('bitmap_green');
-		var context_green = canvas_green.getContext('2d');
-		context_green.fillStyle = "rgb(0, 255, 0)";
-		context_green.fillRect(0, 0, canvas_green.width, canvas_green.height); 
+		var context_red = CreateCanvas(255, 0, 0, width, height);
+		var context_green = CreateCanvas(0, 255, 0, width, height);
 
 		encoder.addFrame(context_red);
 		encoder.addFrame(context_green);
+		return encoder;
 	}
 
 	function UpdateNode(parentNode, canvas_svg)
@@ -56,15 +77,14 @@
 		}
 	}
 
-	function SaveCanvas(canvas_svg)
+	function SaveCanvas(canvas_svg, img_name)
 	{
 		var strDataURI = canvas_svg.toDataURL("image/jpeg");
 		var image = strDataURI.replace("image/jpeg", "image/octet-stream");
 		var link = document.createElement('a');
 		link.setAttribute('href', image);
-		link.setAttribute('download', img_idx + '.jpg');
+		link.setAttribute('download', img_name + '.jpg');
 		// link.click();
-		img_idx += 1;
 	}
 
 	function SvgCallBack(index, node) {
@@ -76,22 +96,54 @@
 
 		encoder.addFrame(canvas_svg.getContext('2d'));
 
-		SaveCanvas(canvas_svg);
+		SaveCanvas(canvas_svg, ++img_idx);
 	}
 
 	function Svg2Canvas() {
-		if (img_idx > 26) {
+		if (img_idx > GetTimeByWordIdx(text.length - 1)) {
 			clearInterval(svg_tmr);
 			encoder.finish();
+			img_idx = 0;
 			document.getElementById('image').src = 'data:image/gif;base64,'+encode64(encoder.stream().getData());
 			return ;
 		}
-		var img_div = img_idx < 13 ? "#wheat_div" : "#mind_div";
+		var word_idx = GetWordIdxByImgIdx(img_idx);
+		var img_div = "#" + text.substr(word_idx, 1);
+		console.log("img_div:" + img_div);
 		var svgElem = $(img_div).find('svg');
 		svgElem.each(SvgCallBack);
 	};
 
-	CreateGif(width, height);
+	function GetTimeByWordIdx(index) 
+	{
+		var tm = 0;
+		for (var i = 0; i <= index; ++i) {
+			tm += text_tm[i];	
+		}
+		return tm;
+	}
+
+	function GetWordIdxByImgIdx(img_idx)
+	{
+		for (var i = 0; i < text.length - 1; ++i) 
+		{
+			var tm = GetTimeByWordIdx(i);
+			if (tm > img_idx) {
+				break;
+			}
+		}
+		console.log(tm + ":" + img_idx + ":" + i);
+		return i;
+	}
+	
+	var width = 100;
+	var height = 100;
+	
+	var text = "麦思五一快乐";
+	var text_tm = [5, 9, 19, 7, 3, 10, 6];
+
+	CreateWordList(text, width, height);
+	var encoder = CreateGif(width, height);
 	svg_tmr = setInterval("Svg2Canvas()", 1000);
 
 </script>
