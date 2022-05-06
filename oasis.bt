@@ -1,0 +1,399 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+typedef struct tagStdBype
+{
+	BYTE val;
+}StdBype;
+
+typedef struct tagIdxByte(int index)
+{
+	local int idx <hidden = true>;
+	idx = index;
+	BYTE val;
+}StdIdxByte;
+
+typedef struct tagStdUnsignedInteger
+{
+	local int idx <hidden = true>;
+	for (idx = 0; idx < 8; ++idx) {
+        StdIdxByte low(idx);
+        if ((low[idx].val << 7) == 0) {
+            break;
+        }
+        break;
+	}
+}StdUnsignedInteger;
+
+typedef struct tagStdSignedInteger
+{
+	local int idx <hidden = true>;
+	for (idx = 0; idx < 8; ++idx) {
+        StdIdxByte low(idx);
+        if ((low[idx].val << 7) == 0) {
+            break;
+        }
+	}
+}StdSignedInteger;
+
+typedef struct tagStdReal
+{
+	StdUnsignedInteger type;
+	switch (type[0].type & 7) {
+		case 0:
+			StdUnsignedInteger val;
+			break;
+		case 1:
+			StdUnsignedInteger val;
+			break;
+		case 2:
+			StdUnsignedInteger val;
+			break;
+		case 3:
+			StdUnsignedInteger val;
+			break;
+		case 4:
+			StdUnsignedInteger val[2];
+			break;
+		case 5:
+			StdUnsignedInteger val[2];
+			break;
+		case 6:
+			float val;
+			break;
+		case 7:
+			double val;
+			break;
+		default:
+			break;
+	}
+}StdReal;
+
+typedef struct tagStdString
+{
+	BYTE len;
+	char str[len];
+}StdString;
+
+typedef struct tagOasisHeader
+{
+	char head[11];
+}OasisHeader;
+
+typedef struct tagAsciiFlag
+{
+	char flag[2];
+}AsciiFlag;
+
+typedef struct tagMagicBytes
+{
+	OasisHeader head;
+	AsciiFlag flag;
+}MagicBytes;
+
+typedef struct tagRecordPad(char type)
+{
+    char flag;
+}RecordPad;
+
+typedef struct tagOffsetTable
+{
+	BYTE byte_flag;
+	BYTE byte_offset;
+}OffsetTable;
+
+typedef struct tagRecordStart(char type)
+{
+	local char flag <hidden=true>;
+    flag = type;
+	StdString version;
+	float unit;
+	// short offset_flag;
+	OffsetTable offset_table[6];
+}RecordStart;
+
+typedef struct tagRecordEnd(char type)
+{
+	local char flag <hidden=true>;
+    flag = true;
+	OffsetTable offset_table[6];
+}RecordEnd;
+
+typedef struct tagCRecord
+{
+	unsigned int len;
+	
+}CRecord;
+
+typedef struct tagCellNameRecord(char type)
+{
+	local char flag <hidden=true>;
+    flag = type;
+    StdString name;
+}CellNameRecord;
+
+typedef struct tagTextStringRecord(char type)
+{
+    local char flag <hidden=true>;
+    flag = type;
+    StdString text;
+    if (flag == 6) {
+        StdUnsignedInteger id;
+    }
+}TextStringRecord;
+
+typedef struct tagPropNameRecord
+{
+	char flag;
+	
+}PropNameRecord;
+
+typedef struct tagPropStringRecord
+{
+	char flag;
+	
+}PropStringRecord;
+
+typedef struct tagLayerNameRecord
+{
+	char flag;
+	
+}LayerNameRecord;
+
+typedef struct tagCellRecord(char type)
+{
+    local char flag <hidden=true>;
+    flag = type;
+    StdString text;
+    if (flag == 14) {
+        StdUnsignedInteger id;
+    }
+}CellRecord;
+
+typedef struct tagXYAbsoluteRecord
+{
+	char flag;
+	
+}XYAbsoluteRecord;
+
+typedef struct tagXYRelativeRecord
+{
+	char flag;
+	
+}XYRelativeRecord;
+
+typedef struct tagTextRecord
+{
+	char flag;
+	
+}TextRecord;
+
+typedef struct tagRectangleRecord
+{
+	char flag;
+	
+}RectangleRecord;
+
+typedef struct tagPolygonRecord
+{
+	char flag;
+	
+}PolygonRecord;
+
+typedef struct tagPathRecord
+{
+	char flag;
+	
+}PathRecord;
+
+typedef struct tagTrapezoidRecord
+{
+	char flag;
+	
+}TrapezoidRecord;
+
+typedef struct tagCTrapezoidRecord
+{
+	char flag;
+	
+}CTrapezoidRecord;
+
+typedef struct tagCircleRecord
+{
+	char flag;
+	
+}CircleRecord;
+
+typedef struct tagPropertyValueVariant(int num)
+{
+    local int idx <hidden = true>;
+    BYTE data_type;
+    switch (data_type) {
+        case (data_type < 8):
+            StdReal val;
+            break;
+        case 8:
+            StdUnsignedInteger val;
+            break;
+        case 9:
+            StdSignedInteger val;
+            break;
+        case 10:
+        case 11:
+        case 12:
+            StdString val;
+            break;
+        case 13:
+        case 14:
+        case 15:
+            StdUnsignedInteger val;
+            break;
+        default:
+            break;
+    }
+}PropertyValueVariant;
+
+typedef struct tagPropertyValueList(int number)
+{
+    local int num <hidden = true>;
+    for (num = number; num > 0; --num) {
+        PropertyValueVariant property(num);
+    }
+}PropertyValueList;
+
+typedef struct tagPropertyRecord
+{
+	char prop_info;
+    if (prop_info & 0x04) {
+        if (prop_info & 0x02) {
+            StdUnsignedInteger id;
+        } else {
+            StdString name;
+        }
+    }
+    if (!(prop_info & 0x08)) {
+        PropertyValueList val_list((prop_info >> 4) & 0x0f);
+    }
+}PropertyRecord;
+
+typedef struct tagXNameRecord
+{
+	char flag;
+	
+}XNameRecord;
+
+typedef struct tagXElementRecord
+{
+	char flag;
+	
+}XElementRecord;
+
+typedef struct tagXGeometryRecord
+{
+	char flag;
+	
+}XGeometryRecord;
+
+typedef struct tagRecord
+{
+	unsigned int id;
+	
+}Record;
+
+typedef struct tagFileLevelStandardProperties
+{
+	StdString max_signed_int_width_key;
+	unsigned int max_signed_int_width;
+	StdString max_unsigned_int_width_key;
+	short max_unsigned_int_width;
+	StdString top_cell_key;
+	char top_cell;
+}FileLevelStandardProperties;
+
+typedef struct CellLevelStandardProperties
+{
+	unsigned int bounding_box;
+	unsigned int cell_offset;
+}CellLevelStandardProperties;
+
+typedef struct tagElementLevelProperties
+{
+	unsigned int attribute;
+	StdString propvalue;
+}ElementLevelProperties;
+
+typedef struct tagRecordType(int index)
+{
+    local int idx <hidden = true>;
+    idx = index;
+	StdUnsignedInteger type;
+	switch (type.low[0].val) {
+        case 0:
+            RecordPad pad(type.low[0].val);
+            break;
+        case 1:
+            RecordStart start(type.low[0].val);
+            break;
+        case 2:
+            RecordEnd end(type.low[0].val);
+            break;
+        case 3:
+        case 4:
+            CellNameRecord cell_name(type.low[0].val);
+            break;
+        case 5:
+        case 6:
+            TextStringRecord text(type.low[0].val);
+            break;
+        case 7:
+        case 8:
+            PropNameRecord prop_name;
+            break;
+        case 9:
+        case 10:
+            PropStringRecord prop_str;
+            break;
+        case 11:
+        case 12:
+            LayerNameRecord layer_name;
+            break;
+        case 13:
+        case 14:
+            CellRecord cell(type.low[0].val);
+            break;
+		case 28:
+        case 29:
+			PropertyRecord property;
+			break;
+		case 30:
+        case 31:
+			XNameRecord property;
+			break;
+		default:
+			break;
+	}
+}RecordType;
+
+typedef struct tagAllRecords
+{
+    local int idxRecord <hidden=true>;
+    
+	while (!FEof()) {
+		RecordType rec_type (idxRecord++);
+	}
+}AllRecords;
+
+LittleEndian();
+
+MagicBytes magicHead;
+AllRecords records;
