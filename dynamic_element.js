@@ -24,12 +24,16 @@
 		return word_div;
 	}
 
+	function CreateWord(word, width, height) {
+		CreateDiv(word, width, height);
+		var wheat = HanziWriter.create(word, word, {width:width, height:height, padding:5, delayBetweenLoops:3000});
+		wheat.loopCharacterAnimation();
+	}
+	
 	function CreateWordList(text, width, height) {
 		for (var i = 0; i < text.length; ++i) {
 			var word = text.substr(i, 1);
-			CreateDiv(word, width, height);
-			var wheat = HanziWriter.create(word, word, {width:width, height:height, padding:5, delayBetweenLoops:3000});
-			wheat.loopCharacterAnimation();			
+			CreateWord(word, width, height);
 		}
 	}
 
@@ -109,6 +113,9 @@
 		}
 		var word_idx = GetWordIdxByImgIdx(img_idx);
 		var img_div = "#" + text.substr(word_idx, 1);
+		if (img_idx == 0 || word_idx > GetWordIdxByImgIdx(img_idx - 1)) {
+			CreateWord(text.substr(word_idx, 1), width, height);
+		}
 		console.log("img_div:" + img_div);
 		var svgElem = $(img_div).find('svg');
 		svgElem.each(SvgCallBack);
@@ -136,14 +143,15 @@
 		return i;
 	}
 	
-	var width = 100;
-	var height = 100;
+	var width = 400;
+	var height = 400;
 	
 	var text = "麦思五一快乐";
-	var text_tm = [5, 9, 19, 7, 3, 10, 6];
+	var text_tm = [11, 13, 9, 3, 13, 8];
 
-	CreateWordList(text, width, height);
+	// CreateWordList(text, width, height);
 	var encoder = CreateGif(width, height);
 	svg_tmr = setInterval("Svg2Canvas()", 1000);
+
 
 </script>
