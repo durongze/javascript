@@ -35,10 +35,11 @@ function dumpPage(frames) {
 
 function dumpFrameTree(frame, indent) {
     console.log(indent + frame.url());
-    const targetFrameUrl = 'https://view42.book118.com';    
+    const targetFrameUrl = 'view42.book118.com';    
     if (frame.url().includes(targetFrameUrl)) {
         const view = frame.waitForSelector('#view'); 
         dumpView(view, indent);
+        console.dir(frame);
     }
 
     for (const child of frame.childFrames()) {
@@ -51,25 +52,59 @@ function dumpView(view, indent)
     console.log(indent + view);
 }
 
+function dumpFrame(frame)
+{
+    const targetFrameUrl = 'view42.book118.com';    
+    if (frame.url().includes(targetFrameUrl)) {
+        console.log("frame content:");
+        console.log((frame.content()));
+        console.log("frame dir:");
+        console.dir(frame);
+        const child_view = frame.waitForSelector("#view");
+        dumpView(child_view);
+    }
+}
+
 (async () => {
-    const url_addr = 'https://max.book118.com/index.shtm';
+    const url_addr = 'https://max.book118.com';
     // const browser = await puppeteer.launch(); 
-    const browser = await puppeteer.launch({headless: false, slowMo: 1000, devtools: true});
+    const browser = await puppeteer.launch({headless: false, slowMo: 100, devtools: true,
+      args: [
+        // '--disable-web-security',
+        '--disable-features=IsolateOrigins,site-per-process',
+      ], 
+      ignoreDefaultArgs: ['--enable-automation']
+    });
     const page = await browser.newPage();  
     await page.goto(url_addr);
     await page.click('#btn_preview_remain');
+    await page.mainFrame().childFrames();
+    // await page.waitForNavigation();
 
     dumpPage(await page.frames());
     dumpFrameTree(await page.mainFrame(), '');
+    
+    const main_content = await page.waitForSelector('#layui-layer1 > div > div > iframe');
+    const frame = await main_content.contentFrame();
+    const PageCount = await frame.waitForSelector('#PageCount');
+    console.dir(PageCount);
+    const PageCountTxt = await frame.$eval('#PageCount', el => el.innerHTML);
+    console.log("PageCountTxt:" + PageCountTxt);
+    
+    for (var i = 0; i < PageCountTxt; i += 1) {
+        await frame.click('#pageNext');
+        var cur_path = 'd:/' + i + ".png";
+        var cur_view_id = '#view' + i;
 
-    var pageIdx = 0;
-    const pageNum = 1;
-    for (pageIdx; pageIdx < pageNum; pageIdx+=1) {
-        console.log(pageIdx);
+        const cur_page_txt = await frame.$eval(cur_view_id, el => el.innerHTML);
+        console.log("cur_page_txt:" + cur_page_txt);  
+        const cur_page = await frame.waitForSelector(cur_view_id);
+        console.dir(cur_page);
+        // cur_page.screenshot({path: cur_path});
     }
 
     const result = await page.evaluate(func_page);
-    console.log("content:");
+    console.log("page content:");
     console.log((await page.content()));
     console.log("result toString:" + result.toString());
     const header = await page.waitForSelector('#header');
@@ -83,6 +118,10 @@ function dumpView(view, indent)
     await page.frames().map(frame => {
         console.log(frame.url())
     });
-    const targetFrameUrl = 'https://view42.book118.com';
-    const frame = await page.frames().find(frame => url().includes(targetFrameUrl));
+
+    const child_frames = await page.mainFrame().childFrames()
+    for (var i of child_frames) {
+        dumpFrame(i);
+    }
+    
 })()
