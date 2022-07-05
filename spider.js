@@ -52,7 +52,7 @@ function dumpView(view, indent)
 }
 
 (async () => {
-    const url_addr = 'https://max.book118.com/html/2022/0402/5120110221004210.shtm';
+    const url_addr = 'https://max.book118.com/index.shtm';
     // const browser = await puppeteer.launch(); 
     const browser = await puppeteer.launch({headless: false, slowMo: 1000, devtools: true});
     const page = await browser.newPage();  
